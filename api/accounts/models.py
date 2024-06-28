@@ -39,7 +39,7 @@ class CustomUserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
 
-        CustomUserProfile.objects.create(user=user)
+        CustomUser.objects.create(user=user)
 
         return user
 

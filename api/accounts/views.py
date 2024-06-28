@@ -7,6 +7,7 @@ from .models import (
     EventManager,
     EventManagerRating,
     AgencyRating,
+    Agency,
 )
 from .serializers import (
     CustomUserSerializer,
@@ -16,6 +17,7 @@ from .serializers import (
     EventManagerSerializer,
     EventManagerRatingSerializer,
     AgencyRatingSerializer,
+    AgencySerializer,
 )
 
 
@@ -34,6 +36,12 @@ class TouristViewSet(viewsets.ModelViewSet):
 class GuideViewSet(viewsets.ModelViewSet):
     queryset = Guide.objects.all()
     serializer_class = GuideSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+
+class AgencyViewSet(viewsets.ModelViewSet):
+    queryset = Agency.objects.all()
+    serializer_class = AgencySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 

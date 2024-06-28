@@ -8,6 +8,7 @@ from .views import (
     EventManagerViewSet,
     EventManagerRatingViewSet,
     AgencyRatingViewSet,
+    AgencyViewSet,
 )
 
 router = DefaultRouter()
@@ -17,6 +18,7 @@ router.register(r"guides", GuideViewSet)
 router.register(r"guide_ratings", GuideRatingViewSet)
 router.register(r"event_managers", EventManagerViewSet)
 router.register(r"event_manager_ratings", EventManagerRatingViewSet)
+router.register(r"agency", AgencyViewSet)
 router.register(r"agency_ratings", AgencyRatingViewSet)
 
 urlpatterns = [
