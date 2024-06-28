@@ -55,6 +55,49 @@ class CustomUserSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+    
+class CustomUserProfileSerializer(serializers.ModelSerializer):
+    user = CustomUserSerializer()
+
+    class Meta:
+        model = CustomUserProfile
+        fields = ['user', 'is_guide', 'is_event_manager']
+
+    def create(self, validated_data):
+        user_data = validated_data.pop('user')
+        user_serializer = CustomUserSerializer(data=user_data)
+        user_serializer.is_valid(raise_exception=True)
+        user = user_serializer.save()
+
+        # Assign is_guide and is_event_manager based on input or defaults
+        is_guide = validated_data.pop('is_guide', False)
+        is_event_manager = validated_data.pop('is_event_manager', False)
+
+        if is_guide:
+            Guide.objects.create(user_profile=user)
+        elif is_event_manager:
+            EventManager.objects.create(user_profile=user)
+        else:
+            Tourist.objects.create(user_profile=user)
+
+        user_profile = CustomUserProfile.objects.create(user=user, **validated_data)
+        return user_profile
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop("user")
+        user = instance.user
+
+        user_serializer = CustomUserSerializer(user, data=user_data)
+        user_serializer.is_valid(raise_exception=True)
+        user_serializer.save()
+
+        instance.is_guide = validated_data.get("is_guide", instance.is_guide)
+        instance.is_event_manager = validated_data.get(
+            "is_event_manager", instance.is_event_manager
+        )
+        instance.save()
+        return instance
+
 
 
 class TouristSerializer(serializers.ModelSerializer):

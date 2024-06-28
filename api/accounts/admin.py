@@ -7,6 +7,9 @@ from .models import (
     EventManager,
     GuideRating,
     EventManagerRating,
+    Contact,
+    Agency,
+    AgencyRating
 )
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
@@ -147,3 +150,6 @@ admin.site.register(Tourist, TouristAdmin)
 admin.site.register(EventManager, EventManagerAdmin)
 admin.site.register(GuideRating, GuideRatingAdmin)
 admin.site.register(EventManagerRating, EventManagerRatingAdmin)
+admin.site.register(Contact)
+admin.site.register(AgencyRating)
+admin.site.register(Agency)
