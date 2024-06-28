@@ -1,6 +1,8 @@
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from accounts.models import CustomUser as User
+from django.conf import settings
 
 
 class Event(models.Model):
@@ -19,6 +21,15 @@ class Event(models.Model):
     description = models.TextField()
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
+    interested_users = models.ManyToManyField(User, related_name="interested_events")
+
+    def add_interested_user(self, user):
+        self.interested_users.add(user)
+        self.chat_room.participants.add(user)
+
+    def remove_interested_user(self, user):
+        self.interested_users.remove(user)
+        self.chat_room.participants.remove(user)
 
     def __str__(self):
         return self.title
@@ -36,10 +47,20 @@ class EventCompleted(models.Model):
 
 @receiver(post_save, sender=EventCompleted)
 def update_num_events_handled(sender, instance, created, **kwargs):
-        event_manager = instance.event_manager
-        event_manager.num_of_events = (
-            EventCompleted.objects.filter(event_manager=event_manager)
-            .distinct("event")
-            .count()
-        )
-        event_manager.save()
+    event_manager = instance.event_manager
+    event_manager.num_of_events = (
+        EventCompleted.objects.filter(event_manager=event_manager)
+        .distinct("event")
+        .count()
+    )
+    event_manager.save()
+
+
+class EventRoom(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name

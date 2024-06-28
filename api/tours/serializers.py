@@ -32,7 +32,15 @@ class TourSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tour
-        fields = ["id", "guide", "title", "description", "start_date", "end_date"]
+        fields = [
+            "id",
+            "guide",
+            "title",
+            "interested_users",
+            "description",
+            "start_date",
+            "end_date",
+        ]
 
     def validate(self, attrs):
         start_date = attrs.get("start_date")

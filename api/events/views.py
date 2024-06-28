@@ -6,7 +6,9 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Event, EventCompleted
 
 from .serializers import EventSerializer, EventCompletedSerializer
-    
+from django.shortcuts import get_object_or_404
+
+
 # Event View
 class EventView(APIView):
     permission_classes = [IsAuthenticated]
@@ -26,7 +28,8 @@ class EventView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
 # Event Completed View
 class EventCompletedView(APIView):
     permission_classes = [IsAuthenticated]
@@ -46,3 +49,10 @@ class EventCompletedView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ExpressInterestView(APIView):
+    def post(self, request, event_id):
+        event = get_object_or_404(Event, id=event_id)
+        event.add_interested_user(request.user)
+        return Response({"status": "success"}, status=status.HTTP_200_OK)

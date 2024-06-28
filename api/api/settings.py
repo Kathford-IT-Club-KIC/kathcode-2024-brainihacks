@@ -40,6 +40,7 @@ INSTALLED_APPS += [
     "agencies",
     "tours",
     "corsheaders",
+    "channels",
 ]
 
 MIDDLEWARE = [
@@ -79,7 +80,7 @@ WSGI_APPLICATION = "api.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "chatapp",
+        "NAME": "tourahar",
         "USER": "postgres",
         "PASSWORD": "root",
         "HOST": "localhost",
@@ -172,3 +173,15 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
+
+
+ASGI_APPLICATION = "api.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}

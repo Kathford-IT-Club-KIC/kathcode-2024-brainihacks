@@ -36,6 +36,7 @@ class EventSerializer(serializers.ModelSerializer):
             "video_file",
             "description",
             "start_date",
+            "interested_users",
             "end_date",
         ]
 
