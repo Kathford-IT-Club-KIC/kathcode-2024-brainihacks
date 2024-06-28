@@ -5,14 +5,20 @@ import Account from "./pages/Accounts/Account";
 import Home from "./pages/Home";
 import Layout from "./pages/layout/Layout";
 import Inbox from "./pages/Inbox";
+import NotFound from "./pages/NotFound";
+import EventsList from "./pages/Events/EventsList";
+import EventDetails from "./pages/Events/EventDetails";
 
 function App() {
   return (
     <Layout>
       <Routes>
+        <Route path="/*" element={<NotFound />} />
         <Route path="/" element={<Home />} />
         <Route path="/account" element={<Account />} />
         <Route path="/chats" element={<Inbox />} />
+        <Route path="/events" element={<EventsList />} />
+        <Route path="/event/:id" element={<EventDetails />} />
       </Routes>
     </Layout>
   );

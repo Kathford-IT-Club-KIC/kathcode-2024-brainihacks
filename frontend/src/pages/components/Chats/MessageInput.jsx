@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Send } from "lucide-react";
 import axios from "axios";
 
-export default function MessageInput({ roomType, roomPk }) {
+export default function MessageInput({ roomType, roomPk, onSendMessage }) {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -25,11 +25,16 @@ export default function MessageInput({ roomType, roomPk }) {
 
     const authToken = localStorage.getItem("access_token");
     const messagePayload = {
-      content: inputValue.trim(),
-      [roomType === "event_room" ? "event_room" : "tour_room"]: roomPk,
+      message: inputValue.trim(),
+      receiver_id: roomPk, // Adjust based on your message format
     };
 
     try {
+      // Call the onSendMessage prop to handle sending the message via WebSocket
+      onSendMessage(inputValue.trim());
+
+      // Alternatively, if you want to use HTTP POST for sending message:
+      /*
       const response = await axios.post(
         `http://127.0.0.1:8000/api/chat/send-message/`,
         messagePayload,
@@ -41,6 +46,8 @@ export default function MessageInput({ roomType, roomPk }) {
         }
       );
       console.log("Message sent successfully:", response.data);
+      */
+
       setInputValue(""); // Clear input after sending message
     } catch (error) {
       console.error("Error sending message:", error);

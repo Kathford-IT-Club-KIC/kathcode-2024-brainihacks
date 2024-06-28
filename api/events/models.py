@@ -3,6 +3,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from accounts.models import CustomUser as User
 from django.conf import settings
+from django.shortcuts import get_object_or_404
+from chats.models import EventRoom
 
 
 class Event(models.Model):
@@ -25,11 +27,13 @@ class Event(models.Model):
 
     def add_interested_user(self, user):
         self.interested_users.add(user)
-        self.chat_room.participants.add(user)
+        event_room = get_object_or_404(EventRoom, event=self)
+        event_room.participants.add(user)
 
     def remove_interested_user(self, user):
         self.interested_users.remove(user)
-        self.chat_room.participants.remove(user)
+        event_room = get_object_or_404(EventRoom, event=self)
+        event_room.participants.remove(user)
 
     def __str__(self):
         return self.title
@@ -54,13 +58,3 @@ def update_num_events_handled(sender, instance, created, **kwargs):
         .count()
     )
     event_manager.save()
-
-
-class EventRoom(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.TextField()
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name

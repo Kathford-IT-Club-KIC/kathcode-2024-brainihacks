@@ -7,7 +7,7 @@ from .views import (
 
 urlpatterns = [
     path("", EventView.as_view(), name="events-list"),
-    path("events/<int:pk>/", EventView.as_view(), name="event-detail"),
+    path("<int:pk>/", EventView.as_view(), name="event-detail"),
     path(
         "completed-events/", EventCompletedView.as_view(), name="completed-events-list"
     ),

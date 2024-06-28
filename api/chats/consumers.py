@@ -1,10 +1,10 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
-import json
-from cryptography.fernet import Fernet
+from channels.db import database_sync_to_async
 from django.contrib.auth.models import AnonymousUser
 from accounts.models import CustomUser as User
 from .models import Message
-from channels.db import database_sync_to_async
+from channels.layers import get_channel_layer
+import json
 import jwt
 
 
@@ -19,6 +19,7 @@ class PersonalChatConsumer(AsyncWebsocketConsumer):
         self.user = await self.authenticate_user(token)
 
         if self.user.is_authenticated:
+            self.channel_layer = get_channel_layer()
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
             await self.accept()
         else:
@@ -28,8 +29,10 @@ class PersonalChatConsumer(AsyncWebsocketConsumer):
     def authenticate_user(self, token):
         if token:
             try:
-                payload = jwt.decode(token, "your-secret-key", algorithms=["HS256"])
-                user_id = payload["user_id"]
+                payload = jwt.decode(
+                    token, "688D8F2FBE25E32136D8A12BA2A56", algorithms=["HS256"]
+                )
+                user_id = payload["id"]
                 return self.get_user(user_id)
             except (
                 jwt.ExpiredSignatureError,
@@ -65,7 +68,10 @@ class PersonalChatConsumer(AsyncWebsocketConsumer):
                 )
 
     async def disconnect(self, code):
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        if hasattr(self, "channel_layer") and self.channel_layer is not None:
+            await self.channel_layer.group_discard(
+                self.room_group_name, self.channel_name
+            )
 
     async def chat_message(self, event):
         message = event["message"]

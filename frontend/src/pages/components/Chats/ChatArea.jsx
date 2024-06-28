@@ -21,7 +21,7 @@ function ChatArea({ user, selectedRoom }) {
     console.log("Connecting with token:", token);
 
     const newSocket = new WebSocket(
-      `ws://127.0.0.1:8000/${selectedRoom.room_type}/ws/${selectedRoom.id}/?token=${token}`
+      `ws://127.0.0.1:8000/${selectedRoom.room_type}/ws/chat/${selectedRoom.id}/?token=${token}`
     );
 
     newSocket.onopen = () => {
@@ -70,16 +70,15 @@ function ChatArea({ user, selectedRoom }) {
     (content) => {
       if (socket && socket.readyState === WebSocket.OPEN) {
         const message = {
-          content,
-          sender: user.username,
-          timestamp: new Date().toISOString(),
+          message: content,
+          receiver_id: selectedRoom.id, // Adjust based on your message format
         };
         socket.send(JSON.stringify(message));
       } else {
         console.error("WebSocket is not connected.");
       }
     },
-    [socket, user]
+    [socket, selectedRoom]
   );
 
   const formatTimestamp = (timestamp) => {

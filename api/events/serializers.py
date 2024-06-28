@@ -20,15 +20,14 @@ class EventManagerRatingSerializer(serializers.ModelSerializer):
 
 
 class EventSerializer(serializers.ModelSerializer):
-    event_manager = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUserProfile.objects.all()
-    )
+    start_date = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")  # Example format
+    end_date = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")  # Example format
 
     class Meta:
         model = Event
         fields = [
             "id",
-            "event_manager",
+            "event_manager",  # We'll populate this manually
             "title",
             "photo1",
             "photo2",
@@ -36,9 +35,16 @@ class EventSerializer(serializers.ModelSerializer):
             "video_file",
             "description",
             "start_date",
-            "interested_users",
             "end_date",
+            "interested_users",
         ]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["event_manager"] = (
+            instance.event_manager.user_profile.user.username
+        )
+        return representation
 
 
 class EventCompletedSerializer(serializers.ModelSerializer):
