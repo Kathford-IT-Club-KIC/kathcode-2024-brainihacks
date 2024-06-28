@@ -84,6 +84,9 @@ export default function Sidebar({ onRoomSelect }) {
                     onRoomSelect={onRoomSelect}
                   />
                 ))}
+                <Link className="text-center" to="/explore">
+                  Explore rooms
+                </Link>
               </>
             ) : (
               <TableRow>

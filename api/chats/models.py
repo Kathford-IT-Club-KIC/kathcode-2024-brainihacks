@@ -23,6 +23,7 @@ class EventRoom(models.Model):
     participants = models.ManyToManyField(
         settings.AUTH_USER_MODEL, related_name="event_rooms"
     )
+    room_type = "event_room"
 
     def __str__(self):
         return self.name
@@ -46,6 +47,8 @@ class TourRoom(models.Model):
     participants = models.ManyToManyField(
         settings.AUTH_USER_MODEL, related_name="tour_rooms"
     )
+
+    room_type = "tour_room"
 
     def __str__(self):
         return self.name

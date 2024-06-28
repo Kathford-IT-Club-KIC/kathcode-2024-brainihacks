@@ -7,12 +7,16 @@ from .models import EventRoom, TourRoom, Message
 from .serializers import EventRoomSerializer, TourRoomSerializer, MessageSerializer
 from events.models import Event
 from tours.models import Tour
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SendMessageView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        logger.debug("Request data: %s", request.data)
         serializer = MessageSerializer(data=request.data)
         if serializer.is_valid():
             message = serializer.save(sender=request.user)
@@ -20,6 +24,7 @@ class SendMessageView(APIView):
                 {"status": "Message sent successfully", "message": serializer.data},
                 status=status.HTTP_201_CREATED,
             )
+        logger.debug("Validation errors: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

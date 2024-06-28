@@ -5,10 +5,26 @@ from accounts.models import CustomUser
 
 class MessageSerializer(serializers.ModelSerializer):
     sender = serializers.ReadOnlyField(source="sender.username")
+    room_type = serializers.SerializerMethodField()
+
+    def get_room_type(self, obj):
+        if obj.event_room:
+            return "event_room"
+        elif obj.tour_room:
+            return "tour_room"
+        return None
 
     class Meta:
         model = Message
-        fields = ["id", "sender", "event_room", "tour_room", "content", "timestamp"]
+        fields = [
+            "id",
+            "sender",
+            "event_room",
+            "tour_room",
+            "content",
+            "timestamp",
+            "room_type",
+        ]
         read_only_fields = ["timestamp"]
 
 
@@ -32,6 +48,7 @@ class EventRoomSerializer(serializers.ModelSerializer):
             "created_at",
             "created_by",
             "photo",
+            "room_type",
         ]
 
 
@@ -47,4 +64,5 @@ class TourRoomSerializer(serializers.ModelSerializer):
             "created_by",
             "created_at",
             "photo",
+            "room_type",
         ]

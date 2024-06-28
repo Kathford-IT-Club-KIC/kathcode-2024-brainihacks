@@ -6,7 +6,7 @@ export default function UserItem({ room, onRoomSelect }) {
     name ? name.charAt(0).toUpperCase() + name.slice(1) : "";
   return (
     <TableRow onClick={() => onRoomSelect(room)} className="cursor-pointer">
-      <TableCell>
+      <TableCell className="flex gap-2 items-center">
         <Avatar>
           <AvatarImage
             src={
@@ -22,7 +22,9 @@ export default function UserItem({ room, onRoomSelect }) {
         </Avatar>
         <div>
           <p>{capitalize(room.name)}</p>
-          <p className="font-light text-sm text-wrap">{room.created_by}</p>
+          <p className="font-light text-sm text-wrap">
+            Host: {room.created_by}
+          </p>
         </div>
       </TableCell>
     </TableRow>
