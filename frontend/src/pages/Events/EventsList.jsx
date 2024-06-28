@@ -58,38 +58,46 @@ export default function EventsList() {
   }, [navigate]); // Include navigate in dependency array if used within useEffect
 
   return (
-    <div>
-      <h2>Events List</h2>
-      <ul>
+    <div className="container mx-auto px-4">
+      <h1 className="text-5xl mb-4 text-center font-bold uppercase">
+        Events List
+      </h1>
+      <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-3">
         {events.map((event) => (
-          <li key={event.id}>
+          <div key={event.id} className="flex flex-col max-w-[360px]">
             <Card className="flex-1">
               <CardHeader>
                 <CardTitle>{event.title}</CardTitle>
-                <CardDescription className=" max-w-[320px] truncate">
+                <CardDescription className="max-w-[320px] truncate">
                   {event.description}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Carousel classN ame="w-[320px]">
+                <Carousel className="w-full">
                   <Link to={`/event/${event.id}`}>
-                    <CarouselContent className="w-[320px]">
-                      <CarouselItem className="w-[320px]">
+                    <CarouselContent className="w-full">
+                      <CarouselItem className="w-full">
                         <img
                           src={`http://127.0.0.1:8000${event.photo1}`}
                           width={320}
+                          className="aspect-square h-auto max-w-full rounded-sm mb-4 shadow-lg"
+                          alt="Event Photo"
                         />
                       </CarouselItem>
-                      <CarouselItem className="w-[320px]">
+                      <CarouselItem className="w-full">
                         <img
                           src={`http://127.0.0.1:8000${event.photo2}`}
                           width={320}
+                          className="aspect-square h-auto max-w-full rounded-sm mb-4 shadow-lg"
+                          alt="Event Photo"
                         />
                       </CarouselItem>
-                      <CarouselItem className="w-[320px]">
+                      <CarouselItem className="w-full">
                         <img
                           src={`http://127.0.0.1:8000${event.photo3}`}
                           width={320}
+                          className="aspect-square h-auto max-w-full rounded-sm mb-4 shadow-lg"
+                          alt="Event Photo"
                         />
                       </CarouselItem>
                     </CarouselContent>
@@ -103,9 +111,9 @@ export default function EventsList() {
                 <p>Ends: {event.end_date}</p>
               </CardFooter>
             </Card>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
