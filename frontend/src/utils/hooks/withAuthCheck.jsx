@@ -25,20 +25,20 @@ const useAuthCheck = () => {
     };
 
     checkAuth();
-  },[isAuthenticated] );
+  }, []); // Runs only once on mount
 
   const fetchUserProfile = async (token) => {
     const api = axios.create({
-      baseURL: 'http://127.0.0.1:8000/api/',
+      baseURL: "http://127.0.0.1:8000/api/",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
       withCredentials: true,
     });
 
     try {
-      const userResponse = await api.get('auth/me/');
+      const userResponse = await api.get("auth/me/");
       const userData = userResponse.data;
       const username = userData.username;
 
@@ -53,12 +53,17 @@ const useAuthCheck = () => {
   };
 
   const handleAuthError = (error) => {
-    if (axios.isAxiosError(error) && error.response && error.response.status === 401) {
+    if (
+      axios.isAxiosError(error) &&
+      error.response &&
+      error.response.status === 401
+    ) {
       setIsAuthenticated(false);
-      localStorage.removeItem('access_token');
+      localStorage.removeItem("access_token");
     }
   };
 
   return { isAuthenticated, userProfile, isLoading };
 };
+
 export default useAuthCheck;

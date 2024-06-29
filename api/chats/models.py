@@ -38,15 +38,16 @@ class Room(models.Model):
 
 
 class Message(models.Model):
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
-    sender = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="sent_messages"
+    room = models.ForeignKey(
+        Room, on_delete=models.CASCADE, null=True, related_name="messages"
     )
-    content = models.TextField()
+    sender = models.ForeignKey("accounts.CustomUser", on_delete=models.CASCADE)
+    content = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to="uploads/chats/", blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.sender.username}: {self.content[:50]}"
+        return f"{self.sender.username}: {self.content[:20]}"
 
 
 class Conversation(models.Model):

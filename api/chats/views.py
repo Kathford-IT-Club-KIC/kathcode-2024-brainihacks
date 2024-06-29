@@ -1,11 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
+from rest_framework import status, generics
 from django.shortcuts import get_object_or_404
-from .serializers import (
-    MessageSerializer,
-)
+from .serializers import MessageSerializer, RoomSerializer
 from events.models import Event
 from tours.models import Tour
 import logging
@@ -17,6 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 import os
 from rest_framework.parsers import MultiPartParser, FormParser
 import tempfile
+from .models import Message
 
 GOOGLE_API_KEY = "AIzaSyAVt4tFZrNd86ZMoiDgFqPV7wSSAFN7MgE"
 genai.configure(api_key=GOOGLE_API_KEY)
@@ -71,15 +70,10 @@ class SendMessageView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        logger.debug("Request data: %s", request.data)
         serializer = MessageSerializer(data=request.data)
         if serializer.is_valid():
             message = serializer.save(sender=request.user)
-            return Response(
-                {"status": "Message sent successfully", "message": serializer.data},
-                status=status.HTTP_201_CREATED,
-            )
-        logger.debug("Validation errors: %s", serializer.errors)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -114,6 +108,25 @@ def chat_page(request, *args, **kwargs):
 from .models import Room
 
 
+class ChatRoomListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        rooms = Room.objects.filter(
+            participants=user
+        )  # Assuming you have a 'members' ManyToManyField in Room model
+        serializer = RoomSerializer(rooms, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ChatRoomDetailView(generics.RetrieveAPIView):
+    queryset = Room.objects.all()
+    serializer_class = RoomSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_url_kwarg = "id"
+
+
 def chat_room(request, room_id):
     room = Room.objects.get(id=room_id)
     return render(
@@ -121,3 +134,13 @@ def chat_room(request, room_id):
         "chat/room.html",
         {"room": room, "ws_url": f"ws://{request.get_host()}/ws/chat/{room_id}/"},
     )
+
+
+class RoomMessagesAPIView(APIView):
+    permission_classes = [IsAuthenticated]  # Adjust as needed
+
+    def get(self, request, room_id):
+        room = get_object_or_404(Room, id=room_id)
+        messages = Message.objects.filter(room=room).order_by("timestamp")
+        serializer = MessageSerializer(messages, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

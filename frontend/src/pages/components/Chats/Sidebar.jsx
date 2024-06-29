@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
   Table,
@@ -15,46 +15,58 @@ import useAuthCheck from "@/utils/hooks/withAuthCheck";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "react-router-dom";
 
-export default function Sidebar({ onRoomSelect, onAIChatSelect }) {
+const BASE_URL = "http://127.0.0.1:8000/";
+
+const Sidebar = ({ onRoomSelect, onAIChatSelect }) => {
   const { isAuthenticated } = useAuthCheck();
-  const [eventRooms, setEventRooms] = useState([]);
-  const [tourRooms, setTourRooms] = useState([]);
+  const [rooms, setRooms] = useState([]);
+  const [selectedRoom, setSelectedRoom] = useState(null);
   const [loader, setLoader] = useState(true);
-  const BASE_URL = "http://127.0.0.1:8000/";
 
   useEffect(() => {
     const authToken = localStorage.getItem("access_token");
     if (isAuthenticated) {
-      const fetchRooms = async () => {
-        try {
-          const [eventResponse, tourResponse] = await Promise.all([
-            axios.get(`${BASE_URL}api/chat/event-rooms/`, {
-              headers: {
-                Authorization: `Bearer ${authToken}`,
-              },
-            }),
-            axios.get(`${BASE_URL}api/chat/tour-rooms/`, {
-              headers: {
-                Authorization: `Bearer ${authToken}`,
-              },
-            }),
-          ]);
-
-          setEventRooms(
-            Array.isArray(eventResponse.data) ? eventResponse.data : []
-          );
-          setTourRooms(
-            Array.isArray(tourResponse.data) ? tourResponse.data : []
-          );
-          setLoader(false);
-        } catch (error) {
-          console.error("Error fetching rooms", error);
-          setLoader(false);
-        }
-      };
-      fetchRooms();
+      fetchRooms(authToken);
     }
   }, [isAuthenticated]);
+
+  const fetchRooms = async (token) => {
+    try {
+      const response = await axios.get(`${BASE_URL}api/chat/rooms/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setRooms(Array.isArray(response.data) ? response.data : []);
+      setLoader(false);
+    } catch (error) {
+      console.error("Error fetching rooms", error);
+      setLoader(false);
+    }
+  };
+
+  const fetchRoomDetails = async (roomId, token) => {
+    try {
+      const response = await axios.get(`${BASE_URL}api/chat/rooms/${roomId}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setSelectedRoom(response.data);
+    } catch (error) {
+      console.error("Error fetching room details", error);
+    }
+  };
+
+  const handleRoomSelect = (room) => {
+    setSelectedRoom(room);
+    onRoomSelect(room); // Example: pass selected room to parent component
+  };
+
+  const handleAIChatSelect = () => {
+    setSelectedRoom(null);
+    onAIChatSelect();
+  };
 
   return (
     <div className="sidebar w-[320px] border-r border-black">
@@ -68,7 +80,7 @@ export default function Sidebar({ onRoomSelect, onAIChatSelect }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow onClick={onAIChatSelect} className="cursor-pointer">
+          <TableRow onClick={handleAIChatSelect} className="cursor-pointer">
             <TableCell className="flex gap-2 items-center">
               <Avatar>
                 <AvatarImage src="/perdotcom-bot-head.gif" alt="AI" />
@@ -80,26 +92,14 @@ export default function Sidebar({ onRoomSelect, onAIChatSelect }) {
             </TableCell>
           </TableRow>
           {!loader ? (
-            eventRooms.length > 0 || tourRooms.length > 0 ? (
-              <>
-                {eventRooms.map((room) => (
-                  <UserItem
-                    key={`event-room-${room.id}`}
-                    room={room}
-                    onRoomSelect={onRoomSelect}
-                  />
-                ))}
-                {tourRooms.map((room) => (
-                  <UserItem
-                    key={`tour-room-${room.id}`}
-                    room={room}
-                    onRoomSelect={onRoomSelect}
-                  />
-                ))}
-                <Link className="text-center" to="/explore">
-                  Explore rooms
-                </Link>
-              </>
+            rooms.length > 0 ? (
+              rooms.map((room) => (
+                <UserItem
+                  key={`room-${room.id}`}
+                  room={room}
+                  onRoomSelect={() => handleRoomSelect(room)}
+                />
+              ))
             ) : (
               <TableRow>
                 <TableCell>
@@ -121,4 +121,6 @@ export default function Sidebar({ onRoomSelect, onAIChatSelect }) {
       </Table>
     </div>
   );
-}
+};
+
+export default Sidebar;
