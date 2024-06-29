@@ -22,7 +22,7 @@ function App() {
         <Route path="/account" element={<Account />} />
         <Route path="/chats" element={<Inbox />} />
         <Route path="/events" element={<EventsList />} />
-        <Route path="/explore" element={<Explore />} />
+        {/* <Route path="/explore" element={<Explore />} /> */}
         <Route path="/guides" element={<GuideList />} />
         <Route path="/agencies" element={<AgencyList />} />
         <Route path="/event-managers" element={<EventManagersList />} />

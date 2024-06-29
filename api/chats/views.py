@@ -3,13 +3,68 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .models import EventRoom, TourRoom, Message
-from .serializers import EventRoomSerializer, TourRoomSerializer, MessageSerializer
+from .serializers import (
+    MessageSerializer,
+)
 from events.models import Event
 from tours.models import Tour
 import logging
+from django.shortcuts import render
+import google.generativeai as genai
+from PIL import Image
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+import os
+from rest_framework.parsers import MultiPartParser, FormParser
+import tempfile
 
+GOOGLE_API_KEY = "AIzaSyAVt4tFZrNd86ZMoiDgFqPV7wSSAFN7MgE"
+genai.configure(api_key=GOOGLE_API_KEY)
 logger = logging.getLogger(__name__)
+
+
+class GeminiAPIView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request):
+        prompt = request.data.get("prompt", "")
+        image_file = request.FILES.get("image")
+
+        try:
+            # Initialize the Gemini model
+            model = genai.GenerativeModel("gemini-pro-vision")
+
+            # Prepare the contents for the API call
+            contents = [prompt] if prompt else []
+
+            # Process the image if it exists
+            if image_file:
+                # Save the uploaded image to a temporary file
+                with tempfile.NamedTemporaryFile(
+                    delete=False, suffix=".png"
+                ) as temp_image:
+                    for chunk in image_file.chunks():
+                        temp_image.write(chunk)
+                    temp_image_path = temp_image.name
+
+                # Open and add the image to the contents
+                image = Image.open(temp_image_path)
+                contents.append(image)
+
+            # Generate content using the Gemini API
+            response = model.generate_content(contents)
+
+            # Clean up the temporary image file if it was created
+            if image_file:
+                os.unlink(temp_image_path)
+
+            # Return the generated text
+            return Response({"text": response.text}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class SendMessageView(APIView):
@@ -26,52 +81,6 @@ class SendMessageView(APIView):
             )
         logger.debug("Validation errors: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class EventRoomListView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        event_rooms = EventRoom.objects.filter(participants=request.user)
-        serializer = EventRoomSerializer(event_rooms, many=True)
-        return Response(serializer.data)
-
-
-class TourRoomListView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        tour_rooms = TourRoom.objects.filter(participants=request.user)
-        serializer = TourRoomSerializer(tour_rooms, many=True)
-        return Response(serializer.data)
-
-
-class EventRoomAccessView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, room_id, *args, **kwargs):
-        event_room = get_object_or_404(EventRoom, id=room_id)
-        if request.user in event_room.participants.all():
-            serializer = EventRoomSerializer(event_room)
-            return Response(serializer.data)
-        else:
-            return Response(
-                {"error": "Access Denied"}, status=status.HTTP_403_FORBIDDEN
-            )
-
-
-class TourRoomAccessView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, room_id, *args, **kwargs):
-        tour_room = get_object_or_404(TourRoom, id=room_id)
-        if request.user in tour_room.participants.all():
-            serializer = TourRoomSerializer(tour_room)
-            return Response(serializer.data)
-        else:
-            return Response(
-                {"error": "Access Denied"}, status=status.HTTP_403_FORBIDDEN
-            )
 
 
 class ExpressEventInterestView(APIView):
@@ -96,3 +105,19 @@ class ExpressTourInterestView(APIView):
             {"status": "Successfully expressed interest in the tour"},
             status=status.HTTP_200_OK,
         )
+
+
+def chat_page(request, *args, **kwargs):
+    return render(request, "index.html")
+
+
+from .models import Room
+
+
+def chat_room(request, room_id):
+    room = Room.objects.get(id=room_id)
+    return render(
+        request,
+        "chat/room.html",
+        {"room": room, "ws_url": f"ws://{request.get_host()}/ws/chat/{room_id}/"},
+    )

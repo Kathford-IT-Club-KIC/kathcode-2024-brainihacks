@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from django.db import transaction
 from .models import CustomUserProfile, Guide, EventManager, Tourist
 
+
 @receiver(post_save, sender=CustomUserProfile)
 def create_or_update_profile_related_models(sender, instance, created, **kwargs):
     if created:
@@ -13,6 +14,7 @@ def create_or_update_profile_related_models(sender, instance, created, **kwargs)
         else:
             Tourist.objects.create(user_profile=instance)
 
+
 @receiver(post_delete, sender=CustomUserProfile)
 def delete_profile_related_models(sender, instance, **kwargs):
     try:
@@ -20,13 +22,13 @@ def delete_profile_related_models(sender, instance, **kwargs):
         guide.delete()
     except Guide.DoesNotExist:
         pass
-        
+
     try:
         event_manager = EventManager.objects.get(user_profile=instance)
         event_manager.delete()
     except EventManager.DoesNotExist:
         pass
-        
+
     try:
         tourist = Tourist.objects.get(user_profile=instance)
         tourist.delete()

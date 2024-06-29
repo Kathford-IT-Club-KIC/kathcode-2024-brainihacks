@@ -1,9 +1,11 @@
 import React from "react";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 export default function UserItem({ room, onRoomSelect }) {
   const capitalize = (name) =>
     name ? name.charAt(0).toUpperCase() + name.slice(1) : "";
+
   return (
     <TableRow onClick={() => onRoomSelect(room)} className="cursor-pointer">
       <TableCell className="flex gap-2 items-center">

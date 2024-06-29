@@ -12,9 +12,10 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import UserItem from "./UserItem";
 import useAuthCheck from "@/utils/hooks/withAuthCheck";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "react-router-dom";
 
-export default function Sidebar({ onRoomSelect }) {
+export default function Sidebar({ onRoomSelect, onAIChatSelect }) {
   const { isAuthenticated } = useAuthCheck();
   const [eventRooms, setEventRooms] = useState([]);
   const [tourRooms, setTourRooms] = useState([]);
@@ -67,6 +68,17 @@ export default function Sidebar({ onRoomSelect }) {
           </TableRow>
         </TableHeader>
         <TableBody>
+          <TableRow onClick={onAIChatSelect} className="cursor-pointer">
+            <TableCell className="flex gap-2 items-center">
+              <Avatar>
+                <AvatarImage src="/perdotcom-bot-head.gif" alt="AI" />
+                <AvatarFallback>"AI"</AvatarFallback>
+              </Avatar>
+              <div>
+                <p>AI Chat✨</p>
+              </div>
+            </TableCell>
+          </TableRow>
           {!loader ? (
             eventRooms.length > 0 || tourRooms.length > 0 ? (
               <>

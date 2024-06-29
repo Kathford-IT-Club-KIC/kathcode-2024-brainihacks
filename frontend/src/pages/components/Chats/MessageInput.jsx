@@ -30,24 +30,7 @@ export default function MessageInput({ roomType, roomPk, onSendMessage }) {
     };
 
     try {
-      // Call the onSendMessage prop to handle sending the message via WebSocket
       onSendMessage(inputValue.trim());
-
-      // Alternatively, if you want to use HTTP POST for sending message:
-      /*
-      const response = await axios.post(
-        `http://127.0.0.1:8000/api/chat/send-message/`,
-        messagePayload,
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      console.log("Message sent successfully:", response.data);
-      */
-
       setInputValue(""); // Clear input after sending message
     } catch (error) {
       console.error("Error sending message:", error);

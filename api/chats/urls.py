@@ -1,28 +1,17 @@
 from django.urls import path
 from .views import (
     SendMessageView,
-    EventRoomAccessView,
-    TourRoomAccessView,
     ExpressEventInterestView,
     ExpressTourInterestView,
-    EventRoomListView,
-    TourRoomListView,
+    chat_page,
+    chat_room,
 )
+from .views import GeminiAPIView
 
 urlpatterns = [
+    path("", chat_page, name="chat_page"),
+    path("gemini/", GeminiAPIView.as_view()),
     path("send-message/", SendMessageView.as_view(), name="send_message"),
-    path("event-rooms/", EventRoomListView.as_view(), name="event_room_list"),
-    path("tour-rooms/", TourRoomListView.as_view(), name="tour_room_list"),
-    path(
-        "event_room/<int:room_id>/",
-        EventRoomAccessView.as_view(),
-        name="event_room_access",
-    ),
-    path(
-        "tour_room/<int:room_id>/",
-        TourRoomAccessView.as_view(),
-        name="tour_room_access",
-    ),
     path(
         "express-event-interest/<int:event_id>/",
         ExpressEventInterestView.as_view(),
@@ -33,4 +22,5 @@ urlpatterns = [
         ExpressTourInterestView.as_view(),
         name="express_tour_interest",
     ),
+    path("chat/<int:room_id>/", chat_room, name="chat_room"),
 ]

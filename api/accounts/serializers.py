@@ -12,7 +12,13 @@ from .models import (
 )
 
 
+from rest_framework import serializers
+from .models import CustomUser, CustomUserProfile
+
+
 class CustomUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
     class Meta:
         model = CustomUser
         fields = [
@@ -21,6 +27,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "username",
             "first_name",
             "last_name",
+            "password",
             "is_active",
             "is_staff",
             "created_at",
@@ -29,9 +36,25 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "is_event_manager",
         ]
 
+    def create(self, validated_data):
+        password = validated_data.pop("password")
+        user = CustomUser(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop("password", None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance
+
 
 class CustomUserProfileSerializer(serializers.ModelSerializer):
-    user = CustomUserSerializer()  # Use CustomUserSerializer for the user field
+    user = CustomUserSerializer()
 
     class Meta:
         model = CustomUserProfile
@@ -43,23 +66,20 @@ class CustomUserProfileSerializer(serializers.ModelSerializer):
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
 
-        is_guide = validated_data.pop("is_guide", False)
-        is_event_manager = validated_data.pop("is_event_manager", False)
-
-        # Depending on the flags, create the corresponding profile
-        if is_guide:
-            Guide.objects.create(user_profile=user)
-        elif is_event_manager:
-            EventManager.objects.create(user_profile=user)
-        else:
-            Tourist.objects.create(user_profile=user)
-
         user_profile = CustomUserProfile.objects.create(user=user, **validated_data)
+
+        if user_profile.is_guide:
+            Guide.objects.create(user_profile=user_profile)
+        elif user_profile.is_event_manager:
+            EventManager.objects.create(user_profile=user_profile)
+        else:
+            Tourist.objects.create(user_profile=user_profile)
+
         return user_profile
 
     def update(self, instance, validated_data):
         user_data = validated_data.pop("user")
-        user = instance.user  # Get the user instance associated with the profile
+        user = instance.user
 
         user_serializer = CustomUserSerializer(user, data=user_data)
         user_serializer.is_valid(raise_exception=True)

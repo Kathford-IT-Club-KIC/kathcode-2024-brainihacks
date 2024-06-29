@@ -1,28 +1,31 @@
 import React, { useState } from "react";
 import Sidebar from "./components/Chats/Sidebar";
 import ChatArea from "./components/Chats/ChatArea";
+import AIChat from "./components/Chats/AIChat";
 
-export default function Inbox() {
-  const [selectedRoom, setSelectedRoom] = useState(null); // State to track selected room
+function Inbox() {
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [isAIChat, setIsAIChat] = useState(false);
 
-  // Function to handle room selection
   const handleRoomSelect = (room) => {
     setSelectedRoom(room);
+    setIsAIChat(false);
+  };
+
+  const handleAIChatSelect = () => {
+    setSelectedRoom(null);
+    setIsAIChat(true);
   };
 
   return (
-    <div className="flex gap-4 w-[100vw] h-[70vh] border border-black p-5 rounded-lg">
+    <div className="inbox flex border rounded-lg justify-center">
       <Sidebar
-        className="flex-1 border-black"
         onRoomSelect={handleRoomSelect}
+        onAIChatSelect={handleAIChatSelect}
       />
-      {selectedRoom ? (
-        <ChatArea className="flex-3" selectedRoom={selectedRoom} />
-      ) : (
-        <div className="flex-1 justify-center items-center border-black">
-          <p>No rooms are open. Click any chats to start talking.</p>
-        </div>
-      )}
+      {isAIChat ? <AIChat /> : <ChatArea selectedRoom={selectedRoom} />}
     </div>
   );
 }
+
+export default Inbox;

@@ -2,9 +2,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from accounts.models import CustomUser as User
-from django.conf import settings
 from django.shortcuts import get_object_or_404
-from chats.models import EventRoom
+from chats.models import Room
 
 
 class Event(models.Model):
@@ -27,13 +26,11 @@ class Event(models.Model):
 
     def add_interested_user(self, user):
         self.interested_users.add(user)
-        event_room = get_object_or_404(EventRoom, event=self)
-        event_room.participants.add(user)
+        self.chat_room.participants.add(user)
 
     def remove_interested_user(self, user):
         self.interested_users.remove(user)
-        event_room = get_object_or_404(EventRoom, event=self)
-        event_room.participants.remove(user)
+        self.chat_room.participants.remove(user)
 
     def __str__(self):
         return self.title
